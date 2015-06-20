@@ -9,9 +9,19 @@
       <h1>任务列表</h1>
 
       <!-- add the checkbox to <body> right below the h1 -->
-      <label class="hide-completed">
-        <input type="checkbox" checked="{{hideCompleted}}" />
-        隐藏已完成的任务
+      <label class="all-tasks">
+        <input type="radio" data-filter="all" name="task-status" checked="{{allTasks}}" />
+        所有
+      </label>
+
+      <label class="completed-tasks">
+        <input type="radio" data-filter="completed" name="task-status" checked="{{complatedTasks}}" />
+        已完成
+      </label>
+
+      <label class="uncompleted-tasks">
+        <input type="radio" data-filter="uncompleted" name="task-status" checked="{{uncomplatedTasks}}" />
+        未完成
       </label>
 
       <!-- add a form below the h1 -->
