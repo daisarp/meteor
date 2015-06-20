@@ -106,6 +106,10 @@ li span.right-text {
   color: red;
 }
 
+li select[name="priority"] {
+	float: right;
+}
+
 li.private {
   background: #eee;
   border-color: #ddd;

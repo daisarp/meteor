@@ -28,11 +28,7 @@
       {{#if currentUser}}
         <form class="new-task" id="Add">
           <input type="text" name="text" placeholder="Type to add new tasks" />
-          <select name="priority">
-            <option value="1">重要</option>
-            <option value="2">一般</option>
-            <option value="3">不重要</option>
-          </select>
+          {{> priority}}
         </form>
       {{/if}}
     </header>
@@ -60,10 +56,22 @@
     <input type="checkbox" checked="{{checked}}" class="toggle-checked" />
 
     <span class="text"><strong>{{username}}</strong> - {{text}}</span>
-    <span class="right-text">{{priorityDesc}}</span>
+    {{#if editing}}
+      {{> priority}}
+    {{else}}
+      <span class="right-text priority-txt">{{priorityDesc}}</span>
+    {{/if}}
   </li>
 </template>
 
 <template name="fullname">
   <li>全名：{{firstname}} {{lastname}}</li>
+</template>
+
+<template name="priority">
+  <select name="priority">
+    <option value="1">重要</option>
+    <option value="2">一般</option>
+    <option value="3">不重要</option>
+  </select>
 </template>

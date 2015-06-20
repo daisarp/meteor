@@ -26,6 +26,9 @@ if (Meteor.isServer) {
     },
     setChecked: function (taskId, setChecked) {
       Tasks.update(taskId, { $set: { checked: setChecked} });
+    },
+    setEditing: function (taskId, isEditing) {
+      Tasks.update(taskId, {$set: {editing: isEditing}});
     }
   });
 }
@@ -66,6 +69,9 @@ if (Meteor.isClient) {
     "click .delete": function () {
       Meteor.call("deleteTask", this._id);
       // Tasks.remove({_id: this._id});
+    },
+    "click .priority-txt": function (event) {
+      Meteor.call('setEditing', this._id, !this.editing);
     }
   });
 
@@ -89,19 +95,6 @@ if (Meteor.isClient) {
     "change input[name='task-status']": function (event) {
       var status = $('input[name="task-status"]:checked').data('filter'); // 'completed'
       Session.set("task-status", status);
-    },
-    "click #AddName": function (event) {
-      var firstname = $('input[name="firstname"]').val();
-      var lastname = $('input[name="lastname"]').val();
-      /*
-      Names.insert({
-        firstname: firstname,
-        lastname: lastname,
-        createdAt: new Date()
-      });
-      */
-
-      return false;
     },
     "submit #Add": function (event) {
       var text = event.target.text.value;
