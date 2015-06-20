@@ -54,9 +54,13 @@ form {
   padding: 10px 0;
   background: transparent;
   border: none;
-  width: 100%;
+  width: 80%;
   padding-right: 80px;
   font-size: 1em;
+}
+
+.new-task select {
+	float: right;
 }
 
 .new-task input:focus{
@@ -95,6 +99,11 @@ li.checked {
 
 li.checked .text {
   text-decoration: line-through;
+}
+
+li span.right-text {
+  float: right;
+  color: red;
 }
 
 li.private {

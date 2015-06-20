@@ -7,7 +7,7 @@ Teamates = new Mongo.Collection("teammates");
 if (Meteor.isServer) {
   // At the bottom of simple-todos.js, outside of the client-only block
   Meteor.methods({
-    addTask: function (text) {
+    addTask: function (text, priority) {
       // Make sure the user is logged in before inserting a task
       if (! Meteor.userId()) {
         throw new Meteor.Error("not-authorized");
@@ -15,6 +15,7 @@ if (Meteor.isServer) {
 
       Tasks.insert({
         text: text,
+        priority: priority,
         createdAt: new Date(),
         owner: Meteor.userId(),
         username: Meteor.user().username
@@ -68,6 +69,20 @@ if (Meteor.isClient) {
     }
   });
 
+  Template.task.helpers({
+    priorityDesc: function () {
+      switch (this.priority) {
+      case '1':
+        return '重要'
+      case '2':
+        return '一般'
+      case '3':
+        return '不重要'
+      }
+      return '无优先级'
+    }
+  })
+
   // Inside the if (Meteor.isClient) block, right after Template.body.helpers:
   Template.body.events({
     // Add to Template.body.events
@@ -89,30 +104,10 @@ if (Meteor.isClient) {
       return false;
     },
     "submit #Add": function (event) {
-      // This function is called when the new task form is submitted
-
       var text = event.target.text.value;
-      var t = $(event.target.text);
-
-      console.log(t.val());
-      console.log(text);
-
-
-      Meteor.call('addTask', text);
-
-      /*
-      Tasks.insert({
-        text: text,
-        createdAt: new Date(),            // current time
-        owner: Meteor.userId(),           // _id of logged in user
-        username: Meteor.user().username  // username of logged in user
-      });
-      */
-
-      // Clear form
-      // event.target.text.value = "";
-      t.val('');
-
+      var priority = $("select[name='priority']").val();
+      Meteor.call('addTask', text, priority);
+      event.target.text.value = '';
       // Prevent default form submit
       return false;
     }
