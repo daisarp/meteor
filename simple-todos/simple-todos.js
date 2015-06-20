@@ -4,10 +4,36 @@ Tasks = new Mongo.Collection("tasks");
 Names = new Mongo.Collection("names");
 Teamates = new Mongo.Collection("teammates");
 
+if (Meteor.isServer) {
+  // At the bottom of simple-todos.js, outside of the client-only block
+  Meteor.methods({
+    addTask: function (text) {
+      // Make sure the user is logged in before inserting a task
+      if (! Meteor.userId()) {
+        throw new Meteor.Error("not-authorized");
+      }
+
+      Tasks.insert({
+        text: text,
+        createdAt: new Date(),
+        owner: Meteor.userId(),
+        username: Meteor.user().username
+      });
+    },
+    deleteTask: function (taskId) {
+      Tasks.remove(taskId);
+    },
+    setChecked: function (taskId, setChecked) {
+      Tasks.update(taskId, { $set: { checked: setChecked} });
+    }
+  });
+}
+
 if (Meteor.isClient) {
   // This code only runs on the client
   // Replace the existing Template.body.helpers
   Template.body.helpers({
+    // currentUser: function () {return Meteor.uesr().username;},
     incompleteCount: function () {
       return Tasks.find({checked: {$ne: true}}).count();
     },
@@ -33,10 +59,12 @@ if (Meteor.isClient) {
     "click .toggle-checked": function () {
       // Set the checked property to the opposite of its current value
       Session.set('currentTask', this.text);
-      Tasks.update(this._id, {$set: {checked: ! this.checked}});
+      Meteor.call("setChecked", this._id, ! this.checked);
+      // Tasks.update(this._id, {$set: {checked: ! this.checked}});
     },
     "click .delete": function () {
-      Tasks.remove({_id: this._id});
+      Meteor.call("deleteTask", this._id);
+      // Tasks.remove({_id: this._id});
     }
   });
 
@@ -44,18 +72,19 @@ if (Meteor.isClient) {
   Template.body.events({
     // Add to Template.body.events
     "change input[name='task-status']": function (event) {
-      var status = $('input[name="task-status"]:checked').data('filter');
+      var status = $('input[name="task-status"]:checked').data('filter'); // 'completed'
       Session.set("task-status", status);
     },
     "click #AddName": function (event) {
       var firstname = $('input[name="firstname"]').val();
       var lastname = $('input[name="lastname"]').val();
-
+      /*
       Names.insert({
         firstname: firstname,
         lastname: lastname,
         createdAt: new Date()
       });
+      */
 
       return false;
     },
@@ -68,10 +97,17 @@ if (Meteor.isClient) {
       console.log(t.val());
       console.log(text);
 
+
+      Meteor.call('addTask', text);
+
+      /*
       Tasks.insert({
         text: text,
-        createdAt: new Date() // current time
+        createdAt: new Date(),            // current time
+        owner: Meteor.userId(),           // _id of logged in user
+        username: Meteor.user().username  // username of logged in user
       });
+      */
 
       // Clear form
       // event.target.text.value = "";
@@ -80,5 +116,9 @@ if (Meteor.isClient) {
       // Prevent default form submit
       return false;
     }
+  });
+
+  Accounts.ui.config({
+    passwordSignupFields: "USERNAME_ONLY"
   });
 }
