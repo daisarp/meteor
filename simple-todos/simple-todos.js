@@ -83,8 +83,10 @@ if (Meteor.isClient) {
       Meteor.call('setEditing', this._id, !this.editing);
     },
     "change select[name='priority']": function (event) {
-      var $this = $(event.target);
-      Meteor.call('setPriority', this._id, $this.val());
+      var value = $(event.target).val();
+      if (value) {
+        Meteor.call('setPriority', this._id, value);
+      }
       Meteor.call('setEditing', this._id, !this.editing);
     }
   });
@@ -95,6 +97,12 @@ if (Meteor.isClient) {
     }
   })
 
+  Template.priority.helpers({
+    pSelected: function (priority) {
+      console.log(priority)
+      return this.priority == priority ? 'selected' : '';
+    }
+  })
   // Inside the if (Meteor.isClient) block, right after Template.body.helpers:
   Template.body.events({
     // Add to Template.body.events
@@ -104,9 +112,11 @@ if (Meteor.isClient) {
     },
     "submit #Add": function (event) {
       var text = event.target.text.value;
-      var priority = $("select[name='priority']").val();
-      Meteor.call('addTask', text, priority);
+      var $select = $("select[name='priority']");
+      Meteor.call('addTask', text, $select.val());
       event.target.text.value = '';
+      $select.val('1');
+
       // Prevent default form submit
       return false;
     }

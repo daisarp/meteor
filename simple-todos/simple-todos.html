@@ -70,8 +70,11 @@
 
 <template name="priority">
   <select name="priority">
-    <option value="1">重要</option>
-    <option value="2">一般</option>
-    <option value="3">不重要</option>
+    <option value="1" {{pSelected 1}}>重要</option>
+    <option value="2" {{pSelected 2}}>一般</option>
+    <option value="3" {{pSelected 3}}>不重要</option>
+    {{#if priority}}
+      <option value="" class="cancel-option">取消选择</option>
+    {{/if}}
   </select>
 </template>

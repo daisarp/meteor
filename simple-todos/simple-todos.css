@@ -110,6 +110,10 @@ li select[name="priority"] {
 	float: right;
 }
 
+li select .cancel-option {
+	color: grey;
+}
+
 li.private {
   background: #eee;
   border-color: #ddd;
