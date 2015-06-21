@@ -5,6 +5,15 @@ Names = new Mongo.Collection("names");
 Teamates = new Mongo.Collection("teammates");
 
 if (Meteor.isServer) {
+  Meteor.publish("tasks", function () {
+    return Tasks.find({
+      $or: [
+        { private: {$ne: true} },
+        { owner: this.userId }
+      ]
+    });
+  });
+
   // At the bottom of simple-todos.js, outside of the client-only block
   Meteor.methods({
     addTask: function (text, priority) {
@@ -22,16 +31,34 @@ if (Meteor.isServer) {
       });
     },
     deleteTask: function (taskId) {
-      Tasks.remove(taskId);
+      var task = Tasks.findOne(taskId);
+      if (task.private && task.owner !== Meteor.userId()) {
+        // If the task is private, make sure only the owner can delete it
+        throw new Meteor.Error("not-authorized");
+      }
     },
     setChecked: function (taskId, setChecked) {
-      Tasks.update(taskId, { $set: { checked: setChecked} });
+      var task = Tasks.findOne(taskId);
+      if (task.private && task.owner !== Meteor.userId()) {
+        // If the task is private, make sure only the owner can check it off
+        throw new Meteor.Error("not-authorized");
+      }
     },
     setEditing: function (taskId, isEditing) {
       Tasks.update(taskId, {$set: {editing: isEditing}});
     },
     setPriority: function (taskId, priority) {
       Tasks.update(taskId, {$set: {priority: priority}});
+    },
+    // Add a method to Meteor.methods called setPrivate
+    setPrivate: function (taskId, setToPrivate) {
+      var task = Tasks.findOne(taskId);
+
+      // Make sure only the task owner can make a task private
+      if (task.owner !== Meteor.userId()) {
+        throw new Meteor.Error("not-authorized");
+      }
+      Tasks.update(taskId, { $set: { private: setToPrivate } });
     }
   });
 }
@@ -43,6 +70,8 @@ var priorityMap = {
 };
 
 if (Meteor.isClient) {
+  Meteor.subscribe("tasks");
+
   // This code only runs on the client
   // Replace the existing Template.body.helpers
   Template.body.helpers({
@@ -88,10 +117,17 @@ if (Meteor.isClient) {
         Meteor.call('setPriority', this._id, value);
       }
       Meteor.call('setEditing', this._id, !this.editing);
+    },
+    // Add an event for the new button to Template.task.events
+    "click .toggle-private": function () {
+      Meteor.call("setPrivate", this._id, ! this.private);
     }
   });
 
   Template.task.helpers({
+     isOwner: function () {
+      return this.owner === Meteor.userId();
+    },
     priorityDesc: function () {
       return priorityMap[this.priority] || '';
     }
