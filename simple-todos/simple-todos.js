@@ -29,9 +29,18 @@ if (Meteor.isServer) {
     },
     setEditing: function (taskId, isEditing) {
       Tasks.update(taskId, {$set: {editing: isEditing}});
+    },
+    setPriority: function (taskId, priority) {
+      Tasks.update(taskId, {$set: {priority: priority}});
     }
   });
 }
+
+var priorityMap = {
+  '1': '重要',
+  '2': '一般',
+  '3': '不重要'
+};
 
 if (Meteor.isClient) {
   // This code only runs on the client
@@ -72,20 +81,17 @@ if (Meteor.isClient) {
     },
     "click .priority-txt": function (event) {
       Meteor.call('setEditing', this._id, !this.editing);
+    },
+    "change select[name='priority']": function (event) {
+      var $this = $(event.target);
+      Meteor.call('setPriority', this._id, $this.val());
+      Meteor.call('setEditing', this._id, !this.editing);
     }
   });
 
   Template.task.helpers({
     priorityDesc: function () {
-      switch (this.priority) {
-      case '1':
-        return '重要'
-      case '2':
-        return '一般'
-      case '3':
-        return '不重要'
-      }
-      return '无优先级'
+      return priorityMap[this.priority] || '';
     }
   })
 
